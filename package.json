@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:ui": "@powershell if(Test-Path build) {Remove-Item -Recurse -Force build} && cd ../Fullstack-Course/part02/lab-exercises/notes-app && npm run build && @powershell Copy-Item build -Recurse ../../../../Fullstack-Course-Notes-Backend",
+    "deploy": "git add -A && git commit -m \"Commit and push from Deploy Script\" && git push",
+    "deploy:full": "npm run build:ui && npm run deploy"
   },
   "keywords": [],
   "author": "",
