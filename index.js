@@ -1,9 +1,10 @@
 const express = require('express')
 const cors = require('cors')
-const app = express();
+const app = express()
 
+app.use(express.static('build'))
 app.use(express.json())
-app.use(cors());
+app.use(cors())
 
 let notes = [
     {
@@ -22,10 +23,6 @@ let notes = [
       important: true
     }
   ]
-
-  app.get('/',(request,response)=> {
-    response.send('<h1>Hello World!</h1>');
-  })
 
   app.get('/api/notes', (request, response) => {
     response.json(notes)
