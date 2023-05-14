@@ -9,52 +9,32 @@ app.use(express.static('build'))
 app.use(express.json())
 app.use(cors())
 
-let notes = [
-  {
-    id: 1,
-    content: "HTML is easy",
-    important: true
-  },
-  {
-    id: 2,
-    content: "Browser can execute only JavaScript",
-    important: false
-  },
-  {
-    id: 3,
-    content: "GET and POST are the most important methods of HTTP protocol",
-    important: true
-  }
-]
-
 app.get('/api/notes', (request, response) => {
   Note.find({}).then(notes => {
     response.json(notes);
   })
 })
 
-app.get('/api/notes/:id', (request, response) => {
+app.get('/api/notes/:id', (request, response, next) => {
   const id = request.params.id;
   Note.findById(id).then(note => {
-    response.json(note)
-  });
+    if (note) {
+      response.json(note)
+    }
+    else {
+      response.status(404).end();
+    }
+  }).catch(err => next(err));
 })
 
 app.delete('/api/notes/:id', (request, response) => {
   const id = request.params.id;
 
-  Note.deleteOne({_id: id}).then(note => {
+  Note.deleteOne({ _id: id }).then(note => {
     response.status(204).end();
   })
 
 })
-
-const generateId = () => {
-  const maxId = notes.length > 0
-    ? Math.max(...notes.map(n => n.id))
-    : -1;
-  return maxId + 1;
-}
 
 app.post('/api/notes', (request, response) => {
   const { content, important } = request.body;
@@ -75,6 +55,48 @@ app.post('/api/notes', (request, response) => {
   }
 
 })
+
+app.delete('/api/notes/:id', (request, response, next) => {
+  Note.findByIdAndRemove(request.params.id)
+    .then(result => {
+      response.status(204).end();
+    })
+    .catch(err => next(err));
+})
+
+app.put('/api/notes/:id', (request, response, next) => {
+  const { content, important } = request.body;
+  const note = {
+    content,
+    important,
+  }
+
+  Note.findByIdAndUpdate(request.params.id, note, { new: true })
+    .then(updatedNote => {
+      if(!updatedNote) {
+      }
+      response.json(updatedNote);
+    })
+    .catch(err => next(err));
+})
+
+app.use((request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' });
+})
+
+//Error Handling
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message);
+
+  //can be made into an object if gets bigger
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformed id' });
+  } 
+
+  next(error);
+}
+
+app.use(errorHandler);
 
 
 const PORT = process.env.PORT || 3001;
