@@ -5,9 +5,11 @@ const cors = require('cors')
 const app = express();
 const logger = require('./utils/logger');
 const notesRouter = require('./controllers/notes');
+const usersRouter = require('./controllers/users')
 const middleware = require('./utils/middleware');
 const mongoose = require('mongoose');
 const config = require('./utils/config.js');
+const loginRouter = require('./controllers/login');
 
 mongoose.set('strictQuery', false)
 
@@ -28,7 +30,9 @@ app.use(express.json())
 app.use(cors())
 
 //API
-app.use('/api/notes', notesRouter);
+app.use('/api/notes', notesRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
 
 //Error Handling
 app.use(middleware.unknownEndpoint);
