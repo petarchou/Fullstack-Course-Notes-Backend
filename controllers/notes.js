@@ -33,23 +33,19 @@ notesRouter.delete('/:id', async (request, response) => {
 })
 
 notesRouter.post('/', async (request, response) => {
-  const { content, important} = request.body;
-  const token = getTokenFrom(request)
-  console.log(token)
-  const decodedToken = jwt.verify(token, process.env.SECRET)
+  const body = request.body
 
+  const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
   if (!decodedToken.id) {
-    return response.status(401).json({
-      error: 'Invalid token'
-    })
+    return response.status(401).json({ error: 'token invalid' })
   }
 
   const user = await User.findById(decodedToken.id)
 
   const note = new Note({
-    content,
-    important: important || false,
-    user: user.id
+    content: body.content,
+    important: body.important === undefined ? false : body.important,
+    user: user._id
   })
 
   const savedNote = await note.save()
@@ -84,7 +80,7 @@ notesRouter.put('/:id', async (request, response) => {
 const getTokenFrom = request => {
   const authorization = request.get('authorization')
   if (authorization && authorization.startsWith('Bearer')) {
-    return authorization.replace('Bearer', '')
+    return authorization.replace('Bearer ', '')
   }
   return null
 }
